@@ -1,0 +1,76 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Virtual Environment
+venv/
+env/
+.venv/
+ENV/
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Outputs / Generated Files
+outputs/*
+!outputs/.gitkeep
+
+# Data Files (optional - remove if needed in repo)
+!data/.gitkeep
+
+# Python cache inside folders
+**/__pycache__/
+*incoming
+# Jupyter
+.ipynb_checkpoints/
+
+# OS Files
+Thumbs.db
+
+# SQLite / DB
+*.sqlite3
+*.db
+
+# Secrets / Keys
+*.pem
+*.key
+*.crt
+
+# Node (if UI uses frontend tooling)
+node_modules/
+ui/node_modules/
+ui/dist/
+ui/build/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Mac
+.AppleDouble
+.LSOverride

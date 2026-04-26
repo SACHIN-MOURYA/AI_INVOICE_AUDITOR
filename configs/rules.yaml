@@ -1,0 +1,165 @@
+# =============================================================
+# AI Invoice Auditor – Validation Rules Configuration
+# =============================================================
+# This file defines the business and data validation rules
+# applied by the Invoice Data Validation Agent and Business Validation Agent.
+# =============================================================
+
+# -------------------------------------------------------------
+# 1. General Invoice Requirements
+# -------------------------------------------------------------
+required_fields:
+  header:
+    - invoice_no
+    - invoice_date
+    - vendor_id
+    - currency
+    - total_amount
+  line_item:
+    - item_code
+    - description
+    - qty
+    - unit_price
+    - total
+
+# -------------------------------------------------------------
+# 2. Field Data Type Rules
+# -------------------------------------------------------------
+data_types:
+  invoice_no: str
+  invoice_date: date
+  vendor_id: str
+  currency: str
+  total_amount: float
+  qty: float
+  unit_price: float
+  total: float
+
+# -------------------------------------------------------------
+# 3. Business Validation Thresholds
+# -------------------------------------------------------------
+tolerances:
+  # Maximum allowed deviation when comparing invoice vs ERP
+  price_difference_percent: 5       # ±5% tolerance in unit price
+  quantity_difference_percent: 0    # Quantity must match exactly
+  tax_difference_percent: 2         # ±2% tolerance for tax amounts
+
+# -------------------------------------------------------------
+# 4. Currency Validation Rules
+# -------------------------------------------------------------
+accepted_currencies:
+  - USD
+  - EUR
+  - INR
+  - GBP
+
+# Define fallback mapping for currency symbols → ISO codes
+currency_symbol_map:
+  "$": "USD"
+  "€": "EUR"
+  "₹": "INR"
+  "£": "GBP"
+
+# -------------------------------------------------------------
+# 5. Validation Policies
+# -------------------------------------------------------------
+validation_policies:
+  # Missing mandatory field handling
+  missing_field_action: "flag"
+  # If totals mismatch beyond tolerance
+  total_mismatch_action: "manual_review"
+  # For currency not in accepted list
+  invalid_currency_action: "reject"
+  # Auto-approval threshold (if no discrepancy & translation confidence ≥ 0.95)
+  auto_approve_confidence_threshold: 0.95
+
+# -------------------------------------------------------------
+# 6. Reporting Parameters
+# -------------------------------------------------------------
+reporting:
+  include_translation_confidence: true
+  include_discrepancy_summary: true
+  report_format: "HTML"
+  output_dir: "./outputs/reports"
+
+# -------------------------------------------------------------
+# 7. Logging and Audit Settings
+# -------------------------------------------------------------
+logging:
+  enable_audit_log: true
+  log_file: "./logs/invoice_auditor.log"
+  log_level: "INFO"
+
+
+
+
+system_prompt: |
+  You are an expert invoice data extraction agent.
+  Your role is to extract structured data from invoice text (PDF, DOCX, or OCR text).
+  
+  You must extract and return ONLY a valid JSON object with these fields:
+  {{
+    "invoice_no": "invoice number or INV or RE",
+    "invoice_date": "invoice date",
+    "po_number": "purchase order number or PO",
+    "vendor_name": "vendor/company name",
+    "currency": "USD/EUR/GBP/INR",
+    "subtotal": numeric_value,
+    "tax_amount": numeric_value,
+    "total_amount": numeric_value,
+    "line_items": [
+      {{
+        "item_code": "Starts with SKU",
+        "description": "item description",
+        "qty": numeric_quantity,
+        "unit_price": numeric_price,
+        "total": numeric_total
+      }}
+    ]
+  }}
+
+  Rules:
+  1. Extract ALL fields accurately
+  2. If a field is not found, use null
+  3. Currency: detect from symbols ($=USD, €=EUR, £=GBP, ₹=INR)
+  4. Numbers: extract as float values (remove currency symbols)
+  5. Line items: extract all items with their details
+  6. Return ONLY valid JSON, no explanations
+
+
+extraction_prompt: |
+  Extract structured invoice data from the following text.
+  Return ONLY a valid JSON object with these exact fields:
+
+  {{
+    "invoice_no": "invoice number (look for: Invoice Number, Invoice No, Rechnungsnummer, etc.)",
+    "invoice_date": "invoice date",
+    "po_number": "purchase order number (look for: PO, Purchase Order, Bestellnummer, etc.)",
+    "vendor_name": "vendor/company name",
+    "currency": "currency code (USD, EUR, GBP, etc.)",
+    "subtotal": numeric value,
+    "tax_amount": numeric tax value,
+    "total_amount": numeric total value,
+    "line_items": [
+      {{
+        "item_code": "SKU or item code",
+        "description": "item description",
+        "qty": numeric quantity,
+        "unit_price": numeric price per unit,
+        "total": numeric line total
+      }}
+    ]
+  }}
+  
+  Invoice text:
+  {text}
+  
+  JSON output:
+
+# Model configuration
+model: "bedrock/anthropic.claude-3-sonnet-20240229-v1:0"
+temperature: 0.1
+max_tokens: 500
+
+
+
