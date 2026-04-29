@@ -11,8 +11,6 @@ litellm.success_callback = ["langfuse"]
 litellm.failure_callback = ["langfuse"]
 sys.path.insert(0, str(Path(__file__).parent))
 
-
-
 # A2A Clients - Import async versions
 from a_2_a.extractor_agent_a2a_client import call_extractor as async_call_extractor
 from a_2_a.translation_agent_a2a_client import call_translator as async_call_translator
