@@ -41,6 +41,5 @@ a2a
 boto3
 langchain_aws
 pytesseract
-fastmcp
-pytesseract
 langfuse==2.44.0
+fastmcp
